@@ -5,8 +5,6 @@ import (
 	"log"
 	"net/url"
 	"strings"
-
-	//"regexp"
 	"time"
 
 	"github.com/buger/goreplay/proto"
