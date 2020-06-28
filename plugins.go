@@ -5,7 +5,14 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/buger/goreplay/statistic"
 )
+
+type statisticCollector interface {
+	Incr(name string)
+	Count(name string, count int)
+}
 
 // InOutPlugins struct for holding references to plugins
 type InOutPlugins struct {
@@ -82,16 +89,14 @@ func InitPlugins() *InOutPlugins {
 	pluginMu.Lock()
 	defer pluginMu.Unlock()
 
+	statisticCollector := statistic.NewStatisticCollector()
+
 	for _, options := range Settings.inputDummy {
 		registerPlugin(NewDummyInput, options)
 	}
 
-	for range Settings.outputDummy {
-		registerPlugin(NewDummyOutput)
-	}
-
 	if Settings.outputStdout {
-		registerPlugin(NewDummyOutput)
+		registerPlugin(NewDummyOutput, statisticCollector)
 	}
 
 	if Settings.outputNull {
@@ -106,7 +111,19 @@ func InitPlugins() *InOutPlugins {
 	}
 
 	for _, options := range Settings.inputRAW {
-		registerPlugin(NewRAWInput, options, engine, Settings.inputRAWTrackResponse, Settings.inputRAWExpire, Settings.inputRAWRealIPHeader, Settings.inputRAWProtocol, Settings.inputRAWBpfFilter, Settings.inputRAWTimestampType, Settings.inputRAWBufferSize)
+		registerPlugin(
+			NewRAWInput,
+			options,
+			engine,
+			Settings.inputRAWTrackResponse,
+			Settings.inputRAWExpire,
+			Settings.inputRAWRealIPHeader,
+			Settings.inputRAWProtocol,
+			Settings.inputRAWBpfFilter,
+			Settings.inputRAWTimestampType,
+			Settings.inputRAWBufferSize,
+			statisticCollector,
+		)
 	}
 
 	for _, options := range Settings.inputTCP {

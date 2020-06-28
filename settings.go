@@ -31,7 +31,6 @@ func (h *MultiOption) Set(value string) error {
 type AppSettings struct {
 	verbose   bool
 	debug     bool
-	stats     bool
 	exitAfter time.Duration
 
 	splitOutput          bool
@@ -39,7 +38,6 @@ type AppSettings struct {
 	pprof                string
 
 	inputDummy   MultiOption
-	outputDummy  MultiOption
 	outputStdout bool
 	outputNull   bool
 
@@ -104,7 +102,6 @@ func init() {
 	flag.StringVar(&Settings.pprof, "http-pprof", "", "Enable profiling. Starts  http server on specified port, exposing special /debug/pprof endpoint. Example: `:8181`")
 	flag.BoolVar(&Settings.verbose, "verbose", false, "Turn on more verbose output")
 	flag.BoolVar(&Settings.debug, "debug", false, "Turn on debug output, shows all intercepted traffic. Works only when with `verbose` flag")
-	flag.BoolVar(&Settings.stats, "stats", false, "Turn on queue stats output")
 
 	if DEMO == "" {
 		flag.DurationVar(&Settings.exitAfter, "exit-after", 0, "exit after specified duration")
@@ -117,7 +114,6 @@ func init() {
 	flag.BoolVar(&Settings.recognizeTCPSessions, "recognize-tcp-sessions", false, "[PRO] If turned on http output will create separate worker for each TCP session. Splitting output will session based as well.")
 
 	flag.Var(&Settings.inputDummy, "input-dummy", "Used for testing outputs. Emits 'Get /' request every 1s")
-	flag.Var(&Settings.outputDummy, "output-dummy", "DEPRECATED: use --output-stdout instead")
 
 	flag.BoolVar(&Settings.outputStdout, "output-stdout", false, "Used for testing inputs. Just prints to console data coming from inputs.")
 

@@ -4,23 +4,30 @@ import (
 	"fmt"
 )
 
+const (
+	outputDummyStatRequestCount = "output_dummy.count"
+)
+
 // DummyOutput used for debugging, prints all incoming requests
 type DummyOutput struct {
+	statistic statisticCollector
 }
 
 // NewDummyOutput constructor for DummyOutput
-func NewDummyOutput() (di *DummyOutput) {
-	di = new(DummyOutput)
-
-	return
+func NewDummyOutput(statistic statisticCollector) *DummyOutput {
+	return &DummyOutput{
+		statistic: statistic,
+	}
 }
 
-func (i *DummyOutput) Write(data []byte) (int, error) {
+func (do *DummyOutput) Write(data []byte) (int, error) {
 	fmt.Println(string(data))
+
+	do.statistic.Incr(outputDummyStatRequestCount)
 
 	return len(data), nil
 }
 
-func (i *DummyOutput) String() string {
+func (do *DummyOutput) String() string {
 	return "Dummy Output"
 }

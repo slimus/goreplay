@@ -4,6 +4,8 @@ import (
 	"io"
 	"sync/atomic"
 	"time"
+
+	"github.com/buger/goreplay/statistic"
 )
 
 // BinaryOutputConfig struct for holding binary output configuration
@@ -33,7 +35,7 @@ type BinaryOutput struct {
 
 	config *BinaryOutputConfig
 
-	queueStats *GorStat
+	queueStats *statistic.GorStat
 }
 
 // NewBinaryOutput constructor for BinaryOutput

@@ -9,6 +9,11 @@ import (
 	"github.com/buger/goreplay/proto"
 )
 
+const (
+	inputRawStatRequestCount  = "input_raw.requests_count"
+	inputRawStatResponseCount = "input_raw.responses_count"
+)
+
 // RAWInput used for intercepting traffic for given address
 type RAWInput struct {
 	data          chan *raw.TCPMessage
@@ -23,6 +28,7 @@ type RAWInput struct {
 	bpfFilter     string
 	timestampType string
 	bufferSize    int64
+	statistic     statisticCollector
 }
 
 // Available engines for intercepting traffic
@@ -33,7 +39,18 @@ const (
 )
 
 // NewRAWInput constructor for RAWInput. Accepts address with port as argument.
-func NewRAWInput(address string, engine int, trackResponse bool, expire time.Duration, realIPHeader string, protocol string, bpfFilter string, timestampType string, bufferSize int64) (i *RAWInput) {
+func NewRAWInput(
+	address string,
+	engine int,
+	trackResponse bool,
+	expire time.Duration,
+	realIPHeader string,
+	protocol string,
+	bpfFilter string,
+	timestampType string,
+	bufferSize int64,
+	statistic statisticCollector,
+) (i *RAWInput) {
 	i = new(RAWInput)
 	i.data = make(chan *raw.TCPMessage)
 	i.address = address
@@ -45,6 +62,7 @@ func NewRAWInput(address string, engine int, trackResponse bool, expire time.Dur
 	i.trackResponse = trackResponse
 	i.timestampType = timestampType
 	i.bufferSize = bufferSize
+	i.statistic = statistic
 
 	switch protocol {
 	case "http":
@@ -80,8 +98,10 @@ func (i *RAWInput) Read(data []byte) (int, error) {
 		if len(i.realIPHeader) > 0 {
 			buf = proto.SetHeader(buf, i.realIPHeader, []byte(msg.IP().String()))
 		}
+		i.statistic.Incr(inputRawStatRequestCount)
 	} else {
 		header = payloadHeader(ResponsePayload, msg.UUID(), msg.Start.UnixNano(), msg.End.UnixNano()-msg.AssocMessage.End.UnixNano())
+		i.statistic.Incr(inputRawStatResponseCount)
 	}
 
 	copy(data[0:len(header)], header)

@@ -8,6 +8,8 @@ import (
 	"log"
 	"net"
 	"time"
+
+	"github.com/buger/goreplay/statistic"
 )
 
 // TCPOutput used for sending raw tcp payloads
@@ -17,7 +19,7 @@ type TCPOutput struct {
 	address  string
 	limit    int
 	buf      []chan []byte
-	bufStats *GorStat
+	bufStats *statistic.GorStat
 	config   *TCPOutputConfig
 }
 
@@ -35,7 +37,7 @@ func NewTCPOutput(address string, config *TCPOutputConfig) io.Writer {
 	o.config = config
 
 	if Settings.outputTCPStats {
-		o.bufStats = NewGorStat("output_tcp", 5000)
+		o.bufStats = statistic.NewStat("output_tcp", 5000)
 	}
 
 	if o.config.sticky {

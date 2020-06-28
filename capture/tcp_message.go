@@ -516,7 +516,7 @@ func (t *TCPMessage) IP() net.IP {
 func (t *TCPMessage) String() string {
 	return strings.Join([]string{
 		"Len packets: " + strconv.Itoa(len(t.packets)),
-		"Data size:" + strconv.Itoa(len(t.Bytes())),
-		"Data:" + string(t.Bytes()),
+		"Data size: " + strconv.Itoa(len(t.Bytes())),
+		"Data: " + string(t.Bytes()),
 	}, "\n")
 }

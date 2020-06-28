@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/buger/goreplay/proto"
+	"github.com/buger/goreplay/statistic"
 )
 
 var _ = fmt.Println
@@ -107,7 +108,7 @@ type HTTPOutput struct {
 
 	config *HTTPOutputConfig
 
-	queueStats *GorStat
+	queueStats *statistic.GorStat
 
 	elasticSearch *ESPlugin
 
@@ -124,7 +125,7 @@ func NewHTTPOutput(address string, config *HTTPOutputConfig) io.Writer {
 	o.stop = make(chan bool)
 
 	if o.config.stats {
-		o.queueStats = NewGorStat("output_http", o.config.statsMs)
+		o.queueStats = statistic.NewStat("output_http", o.config.statsMs)
 	}
 
 	o.queue = make(chan []byte, o.config.queueLen)
