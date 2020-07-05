@@ -14,7 +14,7 @@ type DummyOutput struct {
 }
 
 // NewDummyOutput constructor for DummyOutput
-func NewDummyOutput(statistic statisticCollector) *DummyOutput {
+func NewDummyOutput(_ string, statistic statisticCollector) *DummyOutput {
 	return &DummyOutput{
 		statistic: statistic,
 	}

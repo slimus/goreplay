@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/buger/goreplay/proto"
+	"github.com/buger/goreplay/statistic"
 )
 
 type fakeServiceCb func(string, int, []byte)
@@ -117,8 +118,9 @@ func TestEchoMiddleware(t *testing.T) {
 	Settings.middleware = "./examples/middleware/echo.sh"
 
 	// Catch traffic from one service
+	stat := statistic.NewStatisticCollector()
 	fromAddr := strings.Replace(from.Listener.Addr().String(), "[::]", "127.0.0.1", -1)
-	input := NewRAWInput(fromAddr, EnginePcap, true, testRawExpire, "", "http", "", "", 0)
+	input := NewRAWInput(fromAddr, EnginePcap, true, testRawExpire, "", "http", "", "", 0, stat)
 	defer input.Close()
 
 	// And redirect to another
@@ -182,9 +184,10 @@ func TestTokenMiddleware(t *testing.T) {
 
 	Settings.middleware = "go run ./examples/middleware/token_modifier.go"
 
+	stat := statistic.NewStatisticCollector()
 	fromAddr := strings.Replace(from.Listener.Addr().String(), "[::]", "127.0.0.1", -1)
 	// Catch traffic from one service
-	input := NewRAWInput(fromAddr, EnginePcap, true, testRawExpire, "", "http", "", "", 0)
+	input := NewRAWInput(fromAddr, EnginePcap, true, testRawExpire, "", "http", "", "", 0, stat)
 	defer input.Close()
 
 	// And redirect to another

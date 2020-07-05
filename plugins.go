@@ -10,8 +10,9 @@ import (
 )
 
 type statisticCollector interface {
-	Incr(name string)
-	Count(name string, count int)
+	Incr(name string) uint
+	Count(name string, count int) int
+	SecondsFromStart() uint
 }
 
 // InOutPlugins struct for holding references to plugins
@@ -96,7 +97,7 @@ func InitPlugins() *InOutPlugins {
 	}
 
 	if Settings.outputStdout {
-		registerPlugin(NewDummyOutput, statisticCollector)
+		registerPlugin(NewDummyOutput, "", statisticCollector)
 	}
 
 	if Settings.outputNull {
@@ -135,14 +136,14 @@ func InitPlugins() *InOutPlugins {
 	}
 
 	for _, options := range Settings.inputFile {
-		registerPlugin(NewFileInput, options, Settings.inputFileLoop)
+		registerPlugin(NewFileInput, options, Settings.inputFileLoop, statisticCollector)
 	}
 
 	for _, path := range Settings.outputFile {
 		if strings.HasPrefix(path, "s3://") {
-			registerPlugin(NewS3Output, path, &Settings.outputFileConfig)
+			registerPlugin(NewS3Output, path, &Settings.outputFileConfig, statisticCollector)
 		} else {
-			registerPlugin(NewFileOutput, path, &Settings.outputFileConfig)
+			registerPlugin(NewFileOutput, path, &Settings.outputFileConfig, statisticCollector)
 		}
 	}
 

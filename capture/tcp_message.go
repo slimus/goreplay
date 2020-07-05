@@ -302,7 +302,7 @@ func (t *TCPMessage) updateMethodType() {
 
 	d := t.packets[0].Data
 
-	// Minimum length fo request: GET / HTTP/1.1\r\n
+	// Minimum length for request: GET / HTTP/1.1\r\n
 
 	if len(d) < 16 {
 		t.methodType = httpMethodNotFound

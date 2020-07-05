@@ -19,11 +19,11 @@ type TestInput struct {
 }
 
 // NewTestInput constructor for TestInput
-func NewTestInput() (i *TestInput) {
-	i = new(TestInput)
-	i.data = make(chan []byte, 100)
-	i.stop = make(chan bool)
-	return
+func NewTestInput() *TestInput {
+	return &TestInput{
+		data: make(chan []byte, 100),
+		stop: make(chan bool),
+	}
 }
 
 func (i *TestInput) Read(data []byte) (int, error) {

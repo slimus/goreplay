@@ -24,18 +24,26 @@ type S3Output struct {
 	session *session.Session
 	config  *FileOutputConfig
 	closeCh chan struct{}
+
+	statistic statisticCollector
 }
 
 // NewS3Output constructor for FileOutput, accepts path
-func NewS3Output(pathTemplate string, config *FileOutputConfig) *S3Output {
+func NewS3Output(
+	pathTemplate string,
+	config *FileOutputConfig,
+	statistic statisticCollector,
+) *S3Output {
 	if !PRO {
 		log.Fatal("Using S3 output and input requires PRO license")
 		return nil
 	}
 
-	o := new(S3Output)
-	o.pathTemplate = pathTemplate
-	o.config = config
+	o := &S3Output{
+		pathTemplate: pathTemplate,
+		config:       config,
+		statistic:    statistic,
+	}
 	o.config.onClose = o.onBufferUpdate
 
 	if config.bufferPath == "" {
@@ -54,7 +62,7 @@ func NewS3Output(pathTemplate string, config *FileOutputConfig) *S3Output {
 
 	bufferPath := filepath.Join(config.bufferPath, bufferName)
 
-	o.buffer = NewFileOutput(bufferPath, config)
+	o.buffer = NewFileOutput(bufferPath, config, o.statistic)
 	o.connect()
 
 	return o

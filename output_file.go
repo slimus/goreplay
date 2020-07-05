@@ -56,13 +56,21 @@ type FileOutput struct {
 	totalFileSize  int64
 
 	config *FileOutputConfig
+
+	statistic statisticCollector
 }
 
 // NewFileOutput constructor for FileOutput, accepts path
-func NewFileOutput(pathTemplate string, config *FileOutputConfig) *FileOutput {
-	o := new(FileOutput)
-	o.pathTemplate = pathTemplate
-	o.config = config
+func NewFileOutput(
+	pathTemplate string,
+	config *FileOutputConfig,
+	statistic statisticCollector,
+) *FileOutput {
+	o := &FileOutput{
+		config:       config,
+		pathTemplate: pathTemplate,
+		statistic:    statistic,
+	}
 	o.updateName()
 
 	if strings.Contains(pathTemplate, "%r") {

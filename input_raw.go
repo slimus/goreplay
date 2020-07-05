@@ -10,8 +10,21 @@ import (
 )
 
 const (
-	inputRawStatRequestCount  = "input_raw.requests_count"
-	inputRawStatResponseCount = "input_raw.responses_count"
+	inputRawStatRequestCount   = "input_raw.requests_count"
+	inputRawStatRequestPerSec  = "input_raw.requests_per_sec"
+	inputRawStatResponseCount  = "input_raw.responses_count"
+	inputRawStatResponsePerSec = "input_raw.responses_per_sec"
+
+	// we dont know request method now. we should support it in  tcp_message.updateMethodType
+	inputRawStatRequestMethodGetCount     = "input_raw.get_requests_count"
+	inputRawStatRequestMethodPostCount    = "input_raw.post_requests_count"
+	inputRawStatRequestMethodDeleteCount  = "input_raw.delete_requests_count"
+	inputRawStatRequestMethodHeadCount    = "input_raw.head_requests_count"
+	inputRawStatRequestMethodPatchCount   = "input_raw.patch_requests_count"
+	inputRawStatRequestMethodOptionsCount = "input_raw.options_requests_count"
+	inputRawStatRequestMethodPutCount     = "input_raw.put_requests_count"
+	inputRawStatRequestMethodConnectCount = "input_raw.connect_requests_count"
+	inputRawStatRequestMethodTraceCount   = "input_raw.trace_requests_count"
 )
 
 // RAWInput used for intercepting traffic for given address
@@ -98,9 +111,11 @@ func (i *RAWInput) Read(data []byte) (int, error) {
 		if len(i.realIPHeader) > 0 {
 			buf = proto.SetHeader(buf, i.realIPHeader, []byte(msg.IP().String()))
 		}
+
 		i.statistic.Incr(inputRawStatRequestCount)
 	} else {
 		header = payloadHeader(ResponsePayload, msg.UUID(), msg.Start.UnixNano(), msg.End.UnixNano()-msg.AssocMessage.End.UnixNano())
+
 		i.statistic.Incr(inputRawStatResponseCount)
 	}
 

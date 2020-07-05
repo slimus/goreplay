@@ -11,6 +11,8 @@ import (
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/buger/goreplay/statistic"
 )
 
 func TestFileOutput(t *testing.T) {
@@ -18,7 +20,9 @@ func TestFileOutput(t *testing.T) {
 	quit := make(chan int)
 
 	input := NewTestInput()
-	output := NewFileOutput("/tmp/test_requests.gor", &FileOutputConfig{flushInterval: time.Minute, append: true})
+	config := &FileOutputConfig{flushInterval: time.Minute, append: true}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput("/tmp/test_requests.gor", config, stat)
 
 	plugins := &InOutPlugins{
 		Inputs:  []io.Reader{input},
@@ -83,7 +87,9 @@ func TestFileOutputPathTemplate(t *testing.T) {
 }
 
 func TestFileOutputMultipleFiles(t *testing.T) {
-	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S", &FileOutputConfig{append: true, flushInterval: time.Minute})
+	config := &FileOutputConfig{flushInterval: time.Minute, append: true}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S", config, stat)
 
 	if output.file != nil {
 		t.Error("Should not initialize file if no writes")
@@ -114,7 +120,9 @@ func TestFileOutputMultipleFiles(t *testing.T) {
 }
 
 func TestFileOutputFilePerRequest(t *testing.T) {
-	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S-%r", &FileOutputConfig{append: true})
+	config := &FileOutputConfig{append: true}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S-%r", config, stat)
 
 	if output.file != nil {
 		t.Error("Should not initialize file if no writes")
@@ -142,7 +150,9 @@ func TestFileOutputFilePerRequest(t *testing.T) {
 }
 
 func TestFileOutputCompression(t *testing.T) {
-	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S.gz", &FileOutputConfig{append: true, flushInterval: time.Minute})
+	config := &FileOutputConfig{flushInterval: time.Minute, append: true}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput("/tmp/log-%Y-%m-%d-%S.gz", config, stat)
 
 	if output.file != nil {
 		t.Error("Should not initialize file if no writes")
@@ -230,7 +240,9 @@ func TestFileOutputAppendQueueLimitOverflow(t *testing.T) {
 	rnd := rand.Int63()
 	name := fmt.Sprintf("/tmp/%d", rnd)
 
-	output := NewFileOutput(name, &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 2})
+	config := &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 2}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput(name, config, stat)
 
 	output.Write([]byte("1 1 1\r\ntest"))
 	name1 := output.file.Name()
@@ -259,7 +271,9 @@ func TestFileOutputAppendQueueLimitNoOverflow(t *testing.T) {
 	rnd := rand.Int63()
 	name := fmt.Sprintf("/tmp/%d", rnd)
 
-	output := NewFileOutput(name, &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 3})
+	config := &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 3}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput(name, config, stat)
 
 	output.Write([]byte("1 1 1\r\ntest"))
 	name1 := output.file.Name()
@@ -288,7 +302,9 @@ func TestFileOutputAppendQueueLimitGzips(t *testing.T) {
 	rnd := rand.Int63()
 	name := fmt.Sprintf("/tmp/%d.gz", rnd)
 
-	output := NewFileOutput(name, &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 2})
+	config := &FileOutputConfig{append: false, flushInterval: time.Minute, queueLimit: 2}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput(name, config, stat)
 
 	output.Write([]byte("1 1 1\r\ntest"))
 	name1 := output.file.Name()
@@ -331,7 +347,9 @@ func TestFileOutputAppendSizeLimitOverflow(t *testing.T) {
 
 	messageSize := len(message) + len(payloadSeparator)
 
-	output := NewFileOutput(name, &FileOutputConfig{append: false, flushInterval: time.Minute, sizeLimit: 2 * int64(messageSize)})
+	config := &FileOutputConfig{append: false, flushInterval: time.Minute, sizeLimit: 2 * int64(messageSize)}
+	stat := statistic.NewStatisticCollector()
+	output := NewFileOutput(name, config, stat)
 
 	output.Write([]byte("1 1 1\r\ntest"))
 	name1 := output.file.Name()

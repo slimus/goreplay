@@ -6,7 +6,6 @@ import (
 
 func TestPluginsRegistration(t *testing.T) {
 	Settings.inputDummy = MultiOption{"[]"}
-	Settings.outputDummy = MultiOption{"[]"}
 	Settings.outputHTTP = MultiOption{"www.example.com|10"}
 	Settings.inputFile = MultiOption{"/dev/null"}
 

@@ -20,6 +20,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
+const (
+	inputFileStatRequestCount = "input_file.count"
+)
+
 type fileInputReader struct {
 	reader    *bufio.Reader
 	data      []byte
@@ -60,8 +64,6 @@ func (f *fileInputReader) parseNext() error {
 
 		buffer.Write(line)
 	}
-
-	return nil
 }
 
 func (f *fileInputReader) ReadPayload() []byte {
@@ -119,24 +121,28 @@ type FileInput struct {
 	readers     []*fileInputReader
 	speedFactor float64
 	loop        bool
+
+	statistic statisticCollector
 }
 
 // NewFileInput constructor for FileInput. Accepts file path as argument.
-func NewFileInput(path string, loop bool) (i *FileInput) {
-	i = new(FileInput)
-	i.data = make(chan []byte, 1000)
-	i.exit = make(chan bool)
-	i.path = path
-	i.speedFactor = 1
-	i.loop = loop
+func NewFileInput(path string, loop bool, statistic statisticCollector) *FileInput {
+	i := &FileInput{
+		data:        make(chan []byte, 1000),
+		exit:        make(chan bool),
+		path:        path,
+		speedFactor: 1,
+		loop:        loop,
+		statistic:   statistic,
+	}
 
 	if err := i.init(); err != nil {
-		return
+		return i
 	}
 
 	go i.emit()
 
-	return
+	return i
 }
 
 func (i *FileInput) init() (err error) {
@@ -168,7 +174,7 @@ func (i *FileInput) init() (err error) {
 	} else {
 		if matches, err = filepath.Glob(i.path); err != nil {
 			log.Println("Wrong file pattern", i.path, err)
-			return
+			return err
 		}
 	}
 
@@ -194,6 +200,9 @@ func (i *FileInput) Read(data []byte) (int, error) {
 	case buf = <-i.data:
 	}
 	copy(data, buf)
+
+	i.statistic.Incr(inputFileStatRequestCount)
+
 	return len(buf), nil
 }
 
